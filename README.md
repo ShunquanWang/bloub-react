@@ -8,7 +8,7 @@
 
 React component library for the animated [bloub](https://github.com/jeremy-prt/bloub) SVG avatar — one morphing body shape, independent eye shapes, no animation library.
 
-https://github.com/user-attachments/assets/23468462-a4ad-44ca-a7d9-bac416181189
+![Bloub demo](./public/bloub.gif)
 
 ## Features
 
@@ -77,6 +77,8 @@ See [`BloubBot.tsx`](./packages/bloub-react/src/BloubBot.tsx) for full JSDoc. Pa
 packages/bloub-react/   # publishable React library
 website/                # Next.js studio demo
 ```
+
+![Bloub demo](./public/bloub.png)
 
 ## Development
 

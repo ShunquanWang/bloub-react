@@ -8,6 +8,8 @@
 
 动画 SVG 头像 [bloub](https://github.com/jeremy-prt/bloub) 的 React 组件库 —— 一块形变的身体、独立的眼睛形体，不依赖动画库。
 
+![Bloub 演示](./public/bloub.gif)
+
 ## 特性
 
 - **`BloubBot`** — 可直接使用的 React 头像，支持实时播放与冻结帧
@@ -75,6 +77,7 @@ export function App() {
 packages/bloub-react/   # 可发布的 React 组件库
 website/                # Next.js Studio 演示站
 ```
+![Bloub demo](./public/bloub.png)
 
 ## 开发
 
