@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://bloub-react.shunquan.wang
+Sitemap: https://bloub-react.shunquan.wang/sitemap.xml
