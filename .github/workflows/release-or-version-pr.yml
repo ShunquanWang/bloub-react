@@ -43,6 +43,9 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
+          # Requires repo setting: Settings → Actions → General →
+          # "Allow GitHub Actions to create and approve pull requests"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           version-script: yarn g:version
           publish-script: yarn g:release
           pr-title: '[Release] Version packages'
