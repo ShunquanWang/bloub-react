@@ -1,0 +1,42 @@
+{
+  "name": "bloub-react-website",
+  "version": "0.0.1",
+  "description": "Bloub React studio demo",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:ghpage": "cross-env NEXT_BUILD_ENV_OUTPUT='export' next build",
+    "dev": "next dev -p 3000 -H 0.0.0.0",
+    "fix-all-files": "eslint . --fix",
+    "g:lint-staged-files": "lint-staged --allow-empty",
+    "lint": "eslint .",
+    "start": "next start -p 3000 -H 0.0.0.0",
+    "test": "vitest run",
+    "typecheck": "tsc --project ./tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "bloub-react": "workspace:*",
+    "mediabunny": "^1.54.0",
+    "next": "^16.2.4",
+    "postcss": "^8.5.10",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@hyperse/eslint-config-hyperse": "^1.7.2",
+    "@hyperse/next-config": "^1.0.7",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.2.1",
+    "lint-staged": "^16.4.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5",
+    "zod": "^4.3.6"
+  }
+}

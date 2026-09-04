@@ -1,0 +1,601 @@
+/*
+ * Tokens et styles de l'interface bloub.
+ * Le consommateur doit deja charger Tailwind CSS v4 ; ce fichier ne le reimporte pas.
+ */
+
+:root {
+  /* Fond releve au pixel sur la video de reference. */
+  --paper: #f9f9f9;
+  /*
+   * Couleur principale de l'INTERFACE : un bleu nuit choisi, pas releve. Le
+   * noir de la video, lui, n'a pas bouge — c'est celui du bot, dans skins.ts
+   * (`encre`, #0a0a0c). Les deux ne doivent pas etre confondus : changer
+   * celle-ci retouche le decor, changer l'autre casse la ressemblance.
+   */
+  --ink: #17203a;
+  --line: #e3e5ea;
+  --muted: #6e7382;
+  /* Rouge d'interface pour les actions destructrices — choisi, comme --ink. */
+  --danger: #d63c34;
+
+  /**
+   * Hauteur de la barre de montage. Elle est fixee en bas, donc c'est la scene
+   * qui lui reserve sa place — dans les DEUX vues, sinon l'avatar centre change
+   * de position en passant a la personnalisation.
+   */
+  --timeline: 236px;
+
+  /**
+   * Duree et courbe du passage d'une vue a l'autre : le glissement de la scene et
+   * la croissance de la boule. Le tour du regard, lui, a sa propre duree
+   * (`TURN_TIME` de `src/ui/gaze.ts`), volontairement un peu plus longue — les
+   * yeux finissent de se poser apres que la boule a fini de grandir, ce qui fait
+   * lire les deux comme un seul mouvement qui se termine. Ease-out sans
+   * depassement, comme tout le reste du projet.
+   */
+  --bascule: 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * La meme barre, sur une fenetre etroite : 236 px, c'est 29 % d'un ecran de
+ * telephone, et la hauteur qu'elle prend est retranchee de tout ce qui reste.
+ * 200 px laissent la regle (28 px) et des cartes de 64 px, soit la vignette a sa
+ * taille maximale — en dessous les cartes ne montrent plus rien.
+ *
+ * La variable est lue par la reserve de la scene et par le plafond de l'avatar,
+ * qui valent a toutes les largeurs. Les calages fins de `.barre-export` et des
+ * colonnes, eux, sont dans la requete `>= 64rem` : ils ne voient jamais cette
+ * valeur.
+ */
+@media (width < 64rem) {
+  :root {
+    --timeline: 200px;
+  }
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/*
+ * La boule des reglages sort volontairement par la droite. Sans ce rognage, son
+ * debordement deviendrait une zone defilable et la page partirait en largeur —
+ * y compris pendant l'animation de RETOUR, ou la boule redescend alors que la
+ * vue a deja change. D'ou un rognage permanent, et pas seulement sur cette vue.
+ *
+ * Sur `#app` et non sur `body` : l'`overflow` du corps est PROPAGE a la fenetre
+ * quand la racine est en `visible`, donc l'y poser ne rogne rien du tout. `#app`
+ * est un conteneur ordinaire, lui rogne pour de bon.
+ *
+ * `clip` et pas `hidden` : `hidden` en ferait un conteneur de defilement, donc
+ * rendrait le debordement navigable au lieu de le supprimer. Ici sur le seul axe
+ * x, parce que sous 64rem la mise en page s'empile et doit defiler ; sur grand
+ * ecran une seconde regle rogne aussi la hauteur (voir plus bas).
+ */
+#app {
+  overflow-x: clip;
+  /* repere du grand mot du pied de page, qui s'y cale en `absolute` */
+  position: relative;
+}
+
+/*
+ * Troncature d'une ligne. Volontairement pas `truncate` (text-overflow) : celui
+ * -la coupe au milieu d'un mot et garde l'espace avant les points de suspension
+ * quand la coupe tombe entre deux mots. `line-clamp` coupe au mot et colle les
+ * points au texte, ce qui est la seule facon lisible d'ecrire « Mon cycle… ».
+ */
+@utility tronque {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+/*
+ * Ouverture de la boite de dialogue. Une transition sur un element qui passe de
+ * `display: none` a visible a besoin de `@starting-style` pour avoir un etat de
+ * depart, et de `allow-discrete` pour que `display` et `overlay` attendent la
+ * fin de l'animation a la fermeture. C'est pour ca que ce n'est pas ecrit en
+ * classes utilitaires.
+ */
+.dialogue,
+.dialogue::backdrop {
+  opacity: 0;
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s ease-out,
+    overlay 0.18s ease-out allow-discrete,
+    display 0.18s ease-out allow-discrete;
+}
+
+.dialogue {
+  transform: translateY(8px) scale(0.98);
+}
+
+.dialogue[open],
+.dialogue[open]::backdrop {
+  opacity: 1;
+}
+
+.dialogue[open] {
+  transform: none;
+}
+
+.dialogue::backdrop {
+  background: rgb(10 12 20 / 0.4);
+}
+
+@starting-style {
+  .dialogue[open],
+  .dialogue[open]::backdrop {
+    opacity: 0;
+  }
+
+  .dialogue[open] {
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+/*
+ * Le nom du projet en grand, au pied des reglages. Reprise de la landing page de
+ * Yuzu (`yuzu-releases/index.html`), transposee sur nos couleurs.
+ *
+ * Le fondu est un DEGRADE DE COULEUR revele au travers des lettres
+ * (`background-clip: text`), et non un `mask-image` : le texte n'est jamais peint,
+ * c'est le fond qu'on voit a travers lui. Il part deja faible (22 %) et s'eteint
+ * completement a 88 % de la hauteur, donc le bas des lettres est invisible avant
+ * meme d'etre rogne.
+ *
+ * `line-height` sous 1 fait deborder les glyphes de leur boite : c'est ce qui les
+ * fait rogner par le panneau et donne l'impression que le mot sort de la page.
+ * D'ou `pointer-events: none` — sans lui, les lettres qui remontent volent le clic
+ * des liens du dessus, piege deja tombe sur la landing page.
+ *
+ * `-webkit-text-fill-color` en plus de `color` : Safari ne rend pas le texte
+ * transparent avec le seul `color`. Tailwind n'a pas d'utilitaire pour cette
+ * propriete, d'ou cette regle ecrite a la main plutot qu'en classes.
+ */
+.wordmark {
+  /*
+   * `absolute` dans `#app`, et non `fixed`. `#app` fait exactement la hauteur de
+   * la fenetre, donc le bas est le meme — mais un element fixe est SORTI du
+   * document : il ne suit pas le rebond elastique quand on tente de defiler une
+   * page qui ne defile pas, alors que le mot de la landing page de Yuzu, lui, est
+   * dans le flux et accompagne le geste. En `absolute` il accompagne la page.
+   */
+  position: absolute;
+  /* degage le rail, qui flotte (`fixed left-4`) et ne reserve rien dans la scene */
+  left: 6rem;
+  /* legerement sous le bord : c'est ce qui fait mordre les lettres par l'ecran */
+  bottom: -0.1em;
+  pointer-events: none;
+  user-select: none;
+  line-height: 0.78;
+  /*
+   * Dimensionne d'apres la place REELLEMENT disponible, et non en `vw` seul : le
+   * mot part a 6rem du bord gauche, donc une taille proportionnelle a la fenetre
+   * finissait par pousser le dernier B au-dela du bord droit. 3,05 est la largeur
+   * de « BLOUB » en cadratins a ce poids et cet interlettrage — mesuree, pas
+   * estimee — et le reste est la marge qu'on lui laisse a droite.
+   */
+  font-size: clamp(80px, calc((100vw - 7rem) / 3.05), 268px);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  /*
+   * Marge a droite DANS la boite, et non un espacement autour.
+   *
+   * `background-clip: text` peint le degrade sur la boite de l'element et le
+   * revele au travers des lettres : tout glyphe qui depasse cette boite n'a donc
+   * aucun degrade a montrer, et `-webkit-text-fill-color: transparent` le rend
+   * purement invisible. Or l'interlettrage negatif retranche 0,045 cadratin apres
+   * le DERNIER glyphe aussi, et la panse droite d'un B depasse deja son avance :
+   * le B final se coupait net, quelle que soit la largeur de la fenetre. C'est le
+   * padding qui elargit la boite du degrade, pas la taille du texte.
+   */
+  padding-right: 0.1em;
+  background: linear-gradient(
+    180deg,
+    rgb(23 32 58 / 0.22) 0%,
+    rgb(23 32 58 / 0.1) 48%,
+    rgb(23 32 58 / 0) 88%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  /* il arrive avec le panneau, pas avant : meme retard que `.panneau--ouvert` */
+  opacity: 1;
+  transition: opacity 0.35s ease-out 0.2s;
+}
+
+@starting-style {
+  .wordmark {
+    opacity: 0;
+  }
+}
+
+/*
+ * Le mot sous 64rem : DANS LE FLUX, en bas de la page et centre.
+ *
+ * Le calage sorti du flux ne tient que tant que `#app` fait exactement la hauteur
+ * de la fenetre, ce qui est vrai au-dessus de 64rem — rien n'y defile. En dessous
+ * la page defile pour de vrai, et le mot restait a 812 px du haut du DOCUMENT :
+ * par-dessus les credits au repos (mesure a 375 px : panneau jusqu'a 780, mot des
+ * 753), puis en plein milieu de l'ecran une fois la page deroulee. Le remettre
+ * dans le flux le rend a la page : il vient apres la scene, donc en dernier, et
+ * rien ne peut plus lui passer dessus puisqu'il n'y a plus de recouvrement.
+ *
+ * Centre et non cale a gauche : les 6rem de marge degageaient le rail, qui est
+ * passe en bande HAUTE a cette largeur. Il n'y a plus rien a contourner, et un mot
+ * pleine largeur pose sous une colonne centree se lit de travers s'il ne l'est
+ * pas. La marge droite de 0,1em disparait avec le calage : le centrage laisse du
+ * jeu des deux cotes, donc le dernier B n'a plus de bord ou se couper.
+ *
+ * Le plafond descend a 200 px : sur une fenetre de tablette, 268 px de decoration
+ * mangeaient un quart de la page. Et le diviseur perd les 6rem de marge gauche,
+ * qui n'existent plus ici — le mot occupe la largeur entiere moins les gouttieres
+ * de la scene.
+ */
+@media (width < 64rem) {
+  .wordmark {
+    position: static;
+    text-align: center;
+    padding-right: 0;
+    font-size: clamp(80px, calc((100vw - 2.5rem) / 3.05), 200px);
+    /*
+     * Les lettres touchent le bord bas de la page.
+     *
+     * Une marge negative n'y suffit pas : la zone defilable est l'union des BOITES
+     * des descendants, les marges n'y entrent pas, et le talon de la fonte —
+     * l'espace des jambages, vide pour BLOUB qui n'en a aucun — depassait la boite
+     * de 21 px que la page comptait quand meme. D'ou 21 px de blanc sous le mot.
+     *
+     * On rogne donc a la LIGNE DE BASE : plus rien ne deborde, la page s'arrete ou
+     * les lettres s'arretent. C'est ce que fait le rognage de `#app` au-dessus de
+     * 64rem, ou le mot est simplement pose sous le bord.
+     */
+    height: 0.69em;
+    overflow: hidden;
+    /*
+     * Le degrade est peint sur la BOITE et revele au travers des lettres : rogner
+     * la boite l'aurait eteint plus haut (il s'annule a 88 % de sa hauteur). On lui
+     * rend donc la hauteur de la boite pleine, independamment du rognage.
+     */
+    background-size: 100% 0.78em;
+  }
+}
+
+/*
+ * Deplacement de l'avatar d'une vue a l'autre.
+ *
+ * La scene est une grille de trois colonnes : panneau gauche, avatar, panneau
+ * droit. Une seule des deux colonnes de panneau a une largeur a la fois, et
+ * c'est l'INTERPOLATION DE CES LARGEURS qui deplace l'avatar — les pistes de
+ * grille s'animent, alors que `order` et `flex-direction` non. D'ou cette
+ * grille plutot qu'une inversion de sens du conteneur, et d'ou son ecriture
+ * ici : les deux etats doivent etre des valeurs litterales pour que la
+ * transition ait de quoi interpoler.
+ *
+ * Les gouttieres restent constantes dans les deux etats : la colonne de
+ * l'avatar garde donc exactement la meme largeur, et son centre se decale de la
+ * largeur d'un panneau, ni plus ni moins.
+ *
+ * En dessous de 64rem la grille n'existe pas : tout s'empile, et il n'y a plus
+ * de glissement a animer.
+ */
+
+/*
+ * La TRANSITION de l'avatar est declaree ici, hors de la requete de largeur, la
+ * ou ses positions sont dedans. Deux raisons : l'arrivee sur le site fait
+ * apparaitre la boule a toutes les tailles, et une transition redeclaree plus bas
+ * en chasserait l'opacite — une propriete absente de la liste ne transitionne
+ * plus du tout.
+ *
+ * L'opacite prend son temps (0,8 s) : c'est une boule qui parait, pas un element
+ * qui se charge. Elle reste plus courte que la bascule pour que la boule soit
+ * entierement opaque avant d'avoir fini de s'installer — l'inverse donnerait un
+ * fondu qui traine sur une forme deja immobile.
+ */
+.avatar {
+  transition:
+    transform var(--bascule),
+    opacity 0.8s ease-out;
+}
+
+/*
+ * Arrivee de la barre d'export : elle monte en se revelant, APRES que l'avatar a
+ * pris sa place.
+ *
+ * C'est une TRANSITION et pas une animation, exactement comme `.panneau` — et
+ * c'est ce qui la fait se taire quand il le faut. Une transition ne joue pas sur
+ * le premier style calcule d'un element : au rechargement, ou en revenant de la
+ * vue Animations, la barre nait deja visible et rien ne bouge. Une animation,
+ * elle, rejouait a chaque montage, donc a chaque changement de vue.
+ *
+ * D'ou aussi le fait que la barre soit montee PENDANT l'arrivee, juste masquee :
+ * sans etat de depart present a l'ecran, il n'y aurait rien a interpoler.
+ *
+ * Le RETARD, lui, n'est pas ici mais dans `App.vue` (`RETARD_ARRIVEE`), et il ne
+ * sert QU'A la fin de l'arrivee : le temps que l'avatar rejoigne sa place. En
+ * venant d'une autre vue il n'y a rien a attendre, la barre etant posee sur la
+ * fenetre elle nait deja a sa place. En CSS il aurait fallu une valeur unique
+ * pour les deux cas, donc fausse dans l'un des deux.
+ *
+ * C'est `transform` et non `translate` qui porte la montee : le centrage
+ * horizontal occupe deja `translate`, et les deux proprietes se composent au lieu
+ * de s'ecraser.
+ */
+.barre-export {
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+
+.barre-export--cachee {
+  opacity: 0;
+  transform: translateY(0.85rem);
+}
+
+@media (width >= 64rem) {
+  /*
+   * Sur grand ecran la mise en page est calee sur la fenetre : rien ne doit faire
+   * defiler la PAGE. Le seul debordement vertical vient de la boule geante, dont
+   * la boite grandit avec elle (2,5 fois 460 px) alors que seule la boule est
+   * peinte — du vide qui allongeait la page de deux cents pixels.
+   *
+   * `clip` sur les deux axes ici, et non `hidden` : `hidden` ferait de `#app` un
+   * conteneur de defilement, donc rendrait ce debordement navigable au lieu de le
+   * supprimer. En dessous de 64rem la regle ne s'applique pas — la mise en page
+   * s'y empile et doit defiler pour de vrai.
+   */
+  #app {
+    overflow: clip;
+  }
+
+  .scene {
+    display: grid;
+    grid-template-columns: 0 minmax(0, 1fr) 20rem;
+    column-gap: 2.5rem;
+    transition: grid-template-columns var(--bascule);
+    /*
+     * Bornee a la fenetre. C'est ce qui donne aux panneaux une hauteur CONTRAINTE,
+     * sans quoi leur `overflow-y: auto` ne sert a rien : une piste de grille sans
+     * plafond prend la hauteur de son contenu, la boite ne deborde jamais d'
+     * elle-meme, et le panneau se retrouvait coupe par le rognage de `#app` sans
+     * pouvoir defiler. Sur une fenetre basse, c'est le panneau qui defile.
+     */
+    max-height: 100%;
+    /*
+     * Piste unique DEFINIE, et non automatique. Une piste automatique prend la
+     * hauteur de son contenu et ignore le plafond du conteneur : le panneau
+     * gardait ses 773 px dans une fenetre de 620, se faisait rogner par `#app` et
+     * n'avait rien a defiler puisque sa boite ne debordait pas d'elle-meme.
+     */
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .scene--gauche {
+    grid-template-columns: 20rem minmax(0, 1fr) 0;
+  }
+
+  /*
+   * La boule SEULE en scene : aucune colonne de panneau. Deux cas, et il fallait
+   * bien que ce soit la meme regle —
+   *
+   * - l'arrivee sur le site, ou c'est le RETOUR a `.scene` (la colonne de droite
+   *   qui reprend ses 20rem) qui fait glisser la boule a sa place ;
+   * - l'apercu, ou les panneaux sont demontes. Sans cette classe la grille leur
+   *   reserve quand meme leur piste — une colonne de 20rem plus sa gouttiere —
+   *   et l'avatar se retrouve centre dans une colonne decalee, donc a 180 px a
+   *   gauche du centre de l'ecran. Demonter un panneau ne retire pas sa piste.
+   *
+   * Les deux gouttieres subsistent et sont egales, donc la colonne du milieu
+   * reste centree au pixel.
+   */
+  .scene--seule {
+    grid-template-columns: 0 minmax(0, 1fr) 0;
+  }
+
+  /*
+   * La boule dans les reglages : elle grandit jusqu'a sortir de l'ecran par la
+   * droite, et descend assez pour degager le haut de la page : sans cet air
+   * au-dessus d'elle, la vue se lit comme une image tronquee et non comme un
+   * cadrage.
+   *
+   * Un `transform` et pas la taille du SVG : la mise en page ne bouge pas, donc
+   * rien ne se remet en page a chaque image, et le trace restant vectoriel il
+   * reste net a n'importe quelle echelle.
+   *
+   * Ici, QUE la taille et la place. Le tour sur soi-meme, lui, n'est pas un
+   * miroir CSS : il est joue par le regard, les yeux faisant reellement le tour
+   * de la sphere (`src/ui/gaze.ts`). Retourner l'image par une echelle negative
+   * aurait couche les yeux en `//` au lieu de `\\` et aplati la boule au passage
+   * par zero — deux choses que le projet refuse.
+   *
+   * Les deux etats declarent la meme suite de fonctions, sinon le navigateur n'a
+   * rien a interpoler et le changement se ferait d'un coup.
+   */
+  .avatar {
+    transform: translate(0, 0) scale(1);
+  }
+
+  .avatar--geant {
+    transform: translate(30vw, 14vh) scale(2.5);
+  }
+
+  .scene__gauche {
+    grid-column: 1;
+  }
+
+  .scene__avatar {
+    grid-column: 2;
+  }
+
+  .scene__droite {
+    grid-column: 3;
+  }
+
+  /*
+   * Un panneau dans une colonne de largeur nulle doit disparaitre sans elargir sa
+   * piste : `min-width: 0` l'empeche de reclamer la largeur de son contenu, et le
+   * rognage coupe ce qui depasse pendant le glissement.
+   */
+  .panneau {
+    min-width: 0;
+    /*
+     * `hidden` en largeur pour que la colonne qui se referme ecrase son contenu,
+     * `auto` en hauteur pour que ce soit le PANNEAU qui defile et non la page :
+     * la grille des vignettes du personnalisateur est plus haute qu'une fenetre
+     * basse, et la page ne defile plus (voir `#app` ci-dessus).
+     */
+    overflow-x: hidden;
+    overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+  }
+
+  .panneau--ouvert {
+    opacity: 1;
+    /* le contenu n'apparait qu'une fois la place faite, sinon il se lit pendant
+       qu'il est encore ecrase */
+    transition: opacity 0.35s ease-out 0.2s;
+  }
+
+  /*
+   * Barre d'export : calee sur le bas de la BOITE de l'avatar, pas sur le bas de
+   * la colonne.
+   *
+   * La boite est carree et centree dans la colonne, mais la silhouette n'occupe
+   * qu'environ 65 % de son cote — le viewBox du bot garde de quoi loger les
+   * anneaux des etats animes, qui n'existent pas au repos. Viser le bas de la
+   * colonne laissait donc 176 px de vide mesures entre la boule et le bouton, et
+   * la barre se lisait comme detachee de l'avatar.
+   *
+   * Le `min()` est exactement celui du `max-w` de `.avatar` : c'est la meme
+   * boite, donc la barre suit son retrecissement sur une fenetre basse au lieu de
+   * lui passer dessus.
+   *
+   * Rien n'est reserve ici : `--timeline` est deja soustrait de la hauteur de la
+   * colonne dans les deux vues, donc la bande du bas est libre et l'avatar ne
+   * bouge pas d'un pixel.
+   */
+  /*
+   * Calee comme la barre de MONTAGE, et pas dans la colonne de l'avatar.
+   *
+   * C'est ce qui lui evite de bouger. Ancree dans la colonne, elle suivait
+   * l'interpolation de la grille : en venant des reglages, le panneau de gauche se
+   * referme et le centre de la colonne se deplace de 320 px — la barre glissait
+   * donc jusqu'a sa place au lieu d'y etre. La barre de montage, elle, ne bouge
+   * jamais parce qu'elle est posee sur la FENETRE.
+   *
+   * `left`/`right` sont exactement les siens : la bande couvre la colonne de
+   * l'avatar (4,5rem = marge + gouttiere ; 24,5rem = panneau + gouttiere + marge)
+   * et centre son contenu. La vue Personnaliser n'a qu'une seule disposition de
+   * grille, donc cette position est constante.
+   */
+  .barre-export {
+    position: fixed;
+    left: 4.5rem;
+    right: 24.5rem;
+    display: flex;
+    justify-content: center;
+    /*
+     * Juste sous la boite de l'avatar : haut de la bande + demi-bande (le centre
+     * de la boite, qui y est centree) + demi-boite. Le `min()` est celui du
+     * `max-w` de `.avatar`, donc la barre suit son retrecissement sur une fenetre
+     * basse. Le demi-rem final la fait mordre dans la marge morte du bas de la
+     * boite, ou la silhouette ne va pas.
+     */
+    top: calc(
+      2rem + (100dvh - 3rem - var(--timeline)) / 2 +
+        min(460px, 100dvh - var(--timeline) - 7rem) / 2 - 0.5rem
+    );
+  }
+}
+
+/*
+ * Arrivee sur le site (voir `src/ui/intro.ts` pour le montage et la regle).
+ *
+ * La boule parait seule au centre d'une page vide, a peine plus grande que sa
+ * taille de croisiere, prend le temps de s'installer, puis redescend a l'echelle 1
+ * en glissant vers sa place. Le glissement, lui, n'est pas ici : il vient des
+ * colonnes de `.scene--seule` qui se rouvrent, comme un changement de vue.
+ *
+ * Les ecarts sont volontairement FAIBLES — 0,9 a l'apparition, 1,06 en attente —
+ * la ou un surgissement ample (0,4 puis 1,22) se lisait comme un pop. La boule ne
+ * doit pas jaillir : elle doit PARAITRE, et ce qu'on regarde ensuite est le tour
+ * du regard puis le clignement qui pose l'interface, pas l'echelle.
+ *
+ * Ecrit en `@starting-style` plutot qu'en `@keyframes` : Vue monte toute la page
+ * en JavaScript, donc l'element est bel et bien INSERE, et une transition part
+ * alors de l'etat declare ici. Meme mecanisme que le grand mot du pied de page,
+ * et il a l'avantage de ne rien laisser tourner apres coup.
+ *
+ * Ecrit APRES la requete de largeur, et non dedans : le `transform` doit primer
+ * sur celui que `.avatar` y declare, et l'apparition vaut a toutes les tailles —
+ * sur petit ecran il n'y a pas de colonnes a rouvrir, mais la boule parait quand
+ * meme.
+ */
+.avatar--intro {
+  transform: translate(0, 0) scale(1.06);
+}
+
+@starting-style {
+  .avatar--intro {
+    opacity: 0;
+    /* meme suite de fonctions que l'etat d'arrivee, sinon rien a interpoler */
+    transform: translate(0, 0) scale(0.9);
+  }
+}
+
+/*
+ * La barre laterale pendant l'arrivee. Elle reste montee — elle est `fixed`, la
+ * demonter ne libererait aucune place — mais `inert`, ce qui la sort de l'ordre
+ * de tabulation en meme temps que du clic. L'attribut sert donc de selecteur :
+ * une seule source de verite pour « absente », au lieu d'une classe a tenir en
+ * plus. Elle revient avec le meme retard que `.panneau--ouvert`, pour que tout
+ * le decor se pose d'un seul mouvement.
+ */
+.rail {
+  transition: opacity 0.35s ease-out 0.2s;
+}
+
+.rail[inert] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene,
+  .panneau,
+  .panneau--ouvert,
+  .avatar {
+    transition: none;
+  }
+
+  .barre-export {
+    transition: none;
+  }
+
+  /*
+   * Les boites modales manquaient a cette liste : `.dialogue` anime un
+   * `translateY(8px) scale(0.98)`, donc elles glissaient encore sous « mouvement
+   * reduit » alors que tout le reste etait neutralise. `.rail` et `.wordmark`, eux, ne
+   * jouent que sur l'opacite et n'ont rien a faire ici.
+   */
+  .dialogue,
+  .dialogue::backdrop {
+    transition: none;
+    animation: none;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

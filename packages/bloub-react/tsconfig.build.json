@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "incremental": false,
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "paths": {},
+    "types": ["@types/node"]
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.tsx",
+    "**/*.stories.mdx",
+    ".storybook/**",
+    "dist",
+    "node_modules",
+    "backup"
+  ]
+}

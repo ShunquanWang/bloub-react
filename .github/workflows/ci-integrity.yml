@@ -1,0 +1,65 @@
+name: CI-unitest
+
+on:
+  push:
+    branches:
+      - main
+      - major
+      - minor
+    # Only consider those paths to trigger the action
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - '*.lock'
+      - '.yarnrc.yml'
+      - 'tsconfig.base.json'
+      - '.prettier*'
+      - '.github/**'
+
+  pull_request:
+    branches:
+      - main
+      - major
+      - minor
+    types:
+      - opened
+      - synchronize
+      - reopened
+    # Only consider those paths to trigger the action
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - '*.lock'
+      - '.yarnrc.yml'
+      - 'tsconfig.base.json'
+      - '.prettier*'
+      - '.github/**'
+jobs:
+  test:
+    if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 📥 Install Dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Linter
+        run: |
+          yarn g:lint
+
+      # - name: Build
+      #   run: |
+      #     yarn build
+
+      - name: Unit tests
+        run: |
+          yarn g:test

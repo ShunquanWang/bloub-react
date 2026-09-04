@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '../bloub/styles.css';
+@source '../**/*.{js,ts,jsx,tsx}';
+@source '../../../packages/bloub-react/src/**/*.{js,ts,jsx,tsx}';

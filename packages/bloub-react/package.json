@@ -1,0 +1,73 @@
+{
+  "name": "bloub-react",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/bloub/bloub-react-monorepo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bloub/bloub-react-monorepo",
+    "directory": "packages/bloub-react"
+  },
+  "author": {
+    "name": "Hyperse",
+    "url": "https://github.com/hyperse-io"
+  },
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./src/index.ts",
+  "files": [
+    "src/",
+    "dist/",
+    "index.js",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "scripts": {
+    "build:client": "tsup --config ./tsup.config.ts",
+    "build": "rimraf dist && tsc -p ./tsconfig.build.json && yarn build:client && npm run minify",
+    "minify": "node ../../scripts/minify.mjs --dest=dist",
+    "clean": "rimraf --no-glob ./dist ./coverage ./tsconfig.tsbuildinfo",
+    "lint": "eslint .",
+    "test": "run-s test-unit",
+    "test-unit": "vitest run",
+    "test-coverage": "vitest run --coverage",
+    "test-unit-watch": "vitest watch --ui",
+    "typecheck": "tsc --project ./tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hyperse/eslint-config-hyperse": "^1.7.2",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-istanbul": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
+    "eslint": "^10.2.1",
+    "jsdom": "29.0.2",
+    "npm-run-all": "4.1.5",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "rimraf": "^6.1.3",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

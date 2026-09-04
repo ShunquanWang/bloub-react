@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "allowJs": false,
+    "noEmit": false,
+    "incremental": true,
+    "paths": {},
+    "types": []
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mjs"],
+  "exclude": ["**/node_modules", "**/.*/", "dist", "build"]
+}

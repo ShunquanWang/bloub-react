@@ -1,0 +1,8 @@
+{
+  "extends": "@hyperse/eslint-config-hyperse/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "exclude": ["**/node_modules", "**/.*/"]
+}
