@@ -1,27 +1,31 @@
-# Hyperse Code of Conduct
+# Code of Conduct
 
-## Scope
+## Our Pledge
 
-This code of conduct applies to those who wish to contribute to the Vendure project (any repo under the [hyperse-io](https://github.com/hyperse-io) organization) by way of issues and pull requests. It also applies to official project communications channels such as Slack.
+We as members, contributors, and leaders pledge to make participation in the [bloub-react](https://github.com/ShunquanWang/bloub-react) project a harassment-free experience for everyone.
 
-## Standards
+## Our Standards
 
-Contributors should conduct themselves according to these guidelines:
+Examples of behavior that contributes to a positive environment:
 
-1. Treat others as you would wish to be treated.
-2. Keep your communication professional<sup>1</sup>.
-3. Refrain from unkind or inflammatory communications.
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community
+
+Examples of unacceptable behavior:
+
+- Trolling, insulting or derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others' private information without explicit permission
+- Other conduct which could reasonably be considered inappropriate
 
 ## Enforcement
 
-Contributors and other community members can and should enforce the standard above. The mark of an effective and cohesive group is that the individual members enforce the mores of the group.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by opening a GitHub issue or contacting the maintainer via [GitHub](https://github.com/ShunquanWang).
 
-However, in certain circumstances a report to the project maintainers may be warranted. In this case, contact us at *hi@hyperse.io* so we can deal with it in an appropriate manner.
+All complaints will be reviewed and investigated promptly and fairly.
 
----
+## Attribution
 
-<sup>1</sup>_Definition of "professional":_
-
-1. characterized by or conforming to the technical or ethical standards of a profession
-2. exhibiting a courteous, conscientious, and generally businesslike manner in the workplace
-   [source: [www.merriam-webster.com](https://www.merriam-webster.com/dictionary/professional)]
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.1.

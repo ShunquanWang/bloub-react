@@ -4,12 +4,12 @@ import type { KeyboardEvent } from 'react';
 import { LANGUES, t } from '../i18n';
 import { useLangue } from '../i18n/react';
 
-/** Comptes de l'auteur. */
-const X = 'https://x.com/worlz_';
-const GITHUB = 'https://github.com/jeremy-prt/bloub';
+/** Comptes de l'auteur (React port). */
+const AUTHOR = 'https://github.com/ShunquanWang';
+const GITHUB = 'https://github.com/ShunquanWang/bloub-react';
 
 /**
- * « Cree par Jeremy » : le nom est un lien, donc la phrase se coupe autour de
+ * « Cree par Shunquan Wang » : le nom est un lien, donc la phrase se coupe autour de
  * lui. On ne peut pas la decouper en deux traductions (« Cree par » + le nom) —
  * le chinois met l'auteur AU MILIEU (« 由 X 创作 ») et l'anglais devant le verbe.
  * Le gabarit garde donc `{name}` et c'est ici qu'on separe ce qui vient avant de
@@ -164,12 +164,12 @@ export function Settings() {
         {avant}
         <a
           className="font-medium text-[var(--ink)] underline decoration-[var(--line)] underline-offset-2 transition hover:decoration-[var(--ink)]"
-          href={X}
+          href={AUTHOR}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t('settings.creditsAria')}
         >
-          Jérémy
+          Shunquan Wang
         </a>
         {apres}
       </p>

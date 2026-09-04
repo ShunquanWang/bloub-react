@@ -1,6 +1,12 @@
 import { ecris, lis } from '../ui/stockage';
 import { formePlurielle, interpoler } from './format';
-import { choisirLangue, estLangue, type Langue, tagDe } from './langues';
+import {
+  choisirLangue,
+  estLangue,
+  type Langue,
+  LANGUE_PAR_DEFAUT,
+  tagDe,
+} from './langues';
 import en from './locales/en';
 import fr from './locales/fr';
 import zh from './locales/zh';
@@ -32,15 +38,36 @@ function notify() {
   for (const l of listeners) l();
 }
 
-function lireInitiale(): Langue {
-  if (typeof navigator === 'undefined') return 'en';
-  return choisirLangue(
+/**
+ * Langue stable SSR + premier rendu client (hydratation).
+ * La detection navigateur / localStorage ne se fait qu'apres montage.
+ */
+let courante: Langue = LANGUE_PAR_DEFAUT;
+let demarree = false;
+
+/** Snapshot serveur / hydratation — doit rester identique des deux cotes. */
+export function getServerLangue(): Langue {
+  return LANGUE_PAR_DEFAUT;
+}
+
+/**
+ * Applique la preference memorisee ou le navigateur. A appeler une seule fois
+ * apres hydratation : avant, `courante` reste le defaut pour ne pas diverger
+ * du HTML serveur.
+ */
+export function bootLangue() {
+  if (demarree || typeof navigator === 'undefined') return;
+  demarree = true;
+  const next = choisirLangue(
     lis('langue'),
     navigator.languages ?? [navigator.language]
   );
+  if (next !== courante) {
+    courante = next;
+    notify();
+  }
+  syncDocumentLang();
 }
-
-let courante: Langue = lireInitiale();
 
 /** Langue courante (lecture). */
 export function getLangue(): Langue {
@@ -55,10 +82,7 @@ export function setLangue(valeur: Langue) {
   if (!estLangue(valeur) || valeur === courante) return;
   courante = valeur;
   ecris('langue', valeur);
-  if (typeof document !== 'undefined') {
-    document.documentElement.lang = tagDe(courante);
-    document.title = t('app.title');
-  }
+  syncDocumentLang();
   notify();
 }
 

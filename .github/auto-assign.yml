@@ -1,0 +1,3 @@
+# https://github.com/wow-actions/auto-assign
+addAssignees: author
+addReviewers: false

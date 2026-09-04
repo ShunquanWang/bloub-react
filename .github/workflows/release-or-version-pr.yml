@@ -1,48 +1,54 @@
-name: ReleaseOrVersionPR
+name: Release
 
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  # npm provenance (OIDC)
+  id-token: write
+
 jobs:
   release:
-    # Basic security: the release job can only be executed from this repo and from the main branch (not a remote thing)
-    if: ${{ github.repository == 'hyperse-io/nextra-mono-starter' && contains('refs/heads/main',github.ref) && !startsWith(github.head_ref, 'changeset-release/') }}
-    name: Release and changelog
+    name: Version or publish bloub-react
+    if: ${{ github.repository == 'ShunquanWang/bloub-react' }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v5
         with:
-          # To run comparison we need more than the latest commit.
-          # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
+          # Needed for changesets changelog comparison
           fetch-depth: 0
 
-      - name: Use Node.js 18.x
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 24.x
+          node-version: 22
+          registry-url: https://registry.npmjs.org
 
-      - name: 📥 Install Dependencies
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
         run: yarn --frozen-lockfile
 
-      # @link https://github.com/changesets/action (v2 for @changesets/cli v3)
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create Release Pull Request or publish to npm
         id: changesets
         uses: changesets/action@v2
         with:
-          # publish: yarn release
-          pr-title: '[Release] Version packages'
-          commit-message: 'Version Packages [skip ci]'
-          # Optional, might be used in conjunction with GITHUB_TOKEN to
-          # allow running the workflows on a Version package action.
-          # Be aware of security implications.
-          # setupGitUser: true
+          version: yarn g:version
+          publish: yarn g:release
+          title: '[Release] Version packages'
+          commit: 'chore: version packages [skip ci]'
+          createGithubReleases: true
         env:
-          # See https://github.com/changesets/action/issues/147
-          HOME: ${{ github.workspace }}
-          # Allows to download / query / comment packages
-          # Allows to publish packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

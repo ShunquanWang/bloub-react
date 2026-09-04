@@ -4,9 +4,9 @@ import {
   type CSSProperties,
   forwardRef,
   useEffect,
+  useId,
   useImperativeHandle,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -30,55 +30,138 @@ import {
 } from './bot/skins';
 import { STATE_BY_ID, type StateId } from './bot/states';
 
+/**
+ * Props for the animated SVG avatar.
+ *
+ * Two common modes:
+ * - **Live** — omit `frozenAt`; the bot advances with `requestAnimationFrame`
+ *   (timeline / studio player). Drive `block` / `state` / `playing` / `elapsed`
+ *   as a controlled player, or leave defaults for a self-running cycle.
+ * - **Still** — set `frozenAt` to a time in seconds; no RAF loop. Used for
+ *   customizer thumbnails and exports (`sample(t)` is pure).
+ */
 export type BloubBotProps = {
-  size?: number;
-  /** identifiant de forme du personnalisateur */
-  shape?: string;
-  /** identifiant de couleur du personnalisateur */
-  color?: string;
-  /** identifiant d'expression de repos du personnalisateur */
-  expression?: string;
-  /** couleur du fond, utilisee pour la brume de profondeur des particules */
-  paper?: string;
-  /** accessible name; defaults to a short English label */
-  'aria-label'?: string;
   /**
-   * Fige le rendu a cette date (en secondes depuis le debut de l'etat).
-   * Le moteur etant une fonction pure du temps, on obtient une image
-   * reproductible au pixel pres, sans boucle d'animation.
+   * Side length of the square SVG, in CSS pixels.
+   * @default 320
+   */
+  size?: number;
+
+  /**
+   * Body shape id from the skin catalog (`SHAPES` / `ShapeId`).
+   * Unknown ids fall back to the circular silhouette.
+   * @default DEFAULT_SHAPE (`"cercle"`)
+   */
+  shape?: string;
+
+  /**
+   * Fill / ink color id from the skin catalog (`COLORS` / `ColorId`).
+   * Unknown ids fall back to near-black ink.
+   * @default DEFAULT_COLOR (`"encre"`)
+   */
+  color?: string;
+
+  /**
+   * Resting face expression id (`EXPRESSIONS` / `ExpressionId`).
+   * Applied on idle / `baseFace` states; animated states keep their own faces.
+   * @default DEFAULT_EXPRESSION (`"neutre"`)
+   */
+  expression?: string;
+
+  /**
+   * Background color behind the bot (CSS color).
+   * Also tints depth fog on decorative particles via `mixHex`.
+   * @default `"#f9f9f9"`
+   */
+  paper?: string;
+
+  /**
+   * Accessible name for the root SVG (`role="img"`).
+   * @default `"Animated bot avatar"`
+   */
+  'aria-label'?: string;
+
+  /**
+   * Freeze rendering at this time (seconds since the current state started).
+   * Disables the animation loop; the frame is reproducible pixel-for-pixel.
+   * Omit for live playback.
    */
   frozenAt?: number;
+
   /**
-   * Montage joue par le lecteur : une suite d'etats, chacun tenu la duree de
-   * son bloc. Par defaut, le cycle releve sur la video.
+   * Playback montage: ordered blocks (`state` + `duration`).
+   * When omitted, uses `defaultCycle().blocks` (full video sequence).
    */
   cycle?: Block[];
+
   /**
-   * Le regard suit le pointeur. Hors de portee des vignettes figees.
+   * When `true`, eyes track the pointer (after a short turn-in).
+   * Ignored while `frozenAt` is set. Typical for the studio hero, not tiles.
+   * @default false
    */
   follow?: boolean;
+
   /**
-   * Regard scripte de l'arrivee : evalue a chaque image avec le temps ecoule
-   * depuis qu'il a ete pose.
+   * Scripted look evaluated each frame as `(tSeconds) => Look`.
+   * Used for the site intro spin; `null` leaves pose / follow in charge.
+   * @default null
    */
   gaze?: GazeScript | null;
-  /** index de bloc courant (curseur de lecture) */
+
+  /**
+   * Controlled index of the current block in `cycle`.
+   * @default 0
+   */
   block?: number;
+
+  /** Called when playback advances (or seeks) to another block index. */
   onBlockChange?: (block: number) => void;
-  /** etat courant — sortie du lecteur en lecture, entree pour les vignettes */
+
+  /**
+   * Controlled animation state id (`StateId`).
+   * In the player this mirrors the active block; tiles pass a fixed state.
+   * @default `"idle"`
+   */
   state?: StateId;
+
+  /** Called when the engine switches state (block change or external seek). */
   onStateChange?: (state: StateId) => void;
+
+  /**
+   * When `true`, the cycle advances through blocks on the clock.
+   * When `false`, the current block holds (eyes / idle motion may still run).
+   * @default false
+   */
   playing?: boolean;
+
+  /** Reserved for controlled `playing` updates (not wired in all hosts yet). */
   onPlayingChange?: (playing: boolean) => void;
-  /** Temps ecoule dans le bloc courant, pour la tete de lecture de la timeline. */
+
+  /**
+   * Controlled elapsed time within the current block, in seconds.
+   * Surfaced for timeline scrubbers / playhead UI.
+   * @default 0
+   */
   elapsed?: number;
+
+  /** Called as time progresses inside the current block while playing. */
   onElapsedChange?: (elapsed: number) => void;
+
+  /** Extra class names on the root `<svg>`. */
   className?: string;
+
+  /** Inline styles on the root `<svg>`. */
   style?: CSSProperties;
 };
 
+/** Imperative API via `ref` (seek / off-screen export). */
 export type BloubBotHandle = {
+  /** Jump to a cycle block; optional offset in seconds inside that block. */
   seek: (index: number, offset?: number) => void;
+  /**
+   * Render absolute cycle time `t` (seconds from montage start).
+   * Used by off-screen capture; applies block transitions like live playback.
+   */
   rendAt: (t: number) => void;
 };
 
@@ -142,7 +225,8 @@ export const BloubBot = forwardRef<BloubBotHandle, BloubBotProps>(
       EXPRESSION_BY_ID.get(expressionId) ?? (null as BotExpression | null);
 
     const svgRef = useRef<SVGSVGElement | null>(null);
-    const uid = useMemo(() => Math.random().toString(36).slice(2, 8), []);
+    // useId is stable across SSR/hydration (Math.random is not).
+    const uid = useId().replace(/:/g, '');
     const maskId = `bot-mask-${uid}`;
 
     const engineRef = useRef<BotEngine | null>(null);

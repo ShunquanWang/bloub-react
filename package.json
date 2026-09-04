@@ -2,23 +2,28 @@
   "name": "bloub-react-monorepo",
   "version": "0.0.1",
   "private": true,
-  "description": "Bloub React Monorepo",
+  "description": "Bloub React — animated SVG avatar component and studio demo",
   "keywords": [
     "bloub",
     "react",
-    "monorepo"
+    "monorepo",
+    "avatar",
+    "svg"
   ],
-  "homepage": "https://github.com/bloub/bloub-react-monorepo",
+  "homepage": "https://github.com/ShunquanWang/bloub-react",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bloub/bloub-react-monorepo"
+    "url": "https://github.com/ShunquanWang/bloub-react.git"
   },
   "author": {
-    "name": "hyperse",
-    "url": "https://github.com/hyperse-io"
+    "name": "Shunquan Wang",
+    "url": "https://github.com/ShunquanWang"
   },
   "type": "module",
-  "license": "SEE LICENSE IN FILE 'LICENSE'",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ShunquanWang/bloub-react/issues"
+  },
   "workspaces": [
     "website",
     "packages/*",
@@ -27,8 +32,7 @@
   ],
   "scripts": {
     "g:clean": "yarn clean:global-cache && yarn workspaces foreach -At run clean",
-    "g:build": "yarn g:build",
-    "g:build-local": "yarn workspaces foreach -At run build",
+    "g:build": "yarn workspaces foreach -At --include 'bloub-react' run build",
     "g:test": "yarn workspaces foreach -At run test",
     "g:test-unit": "yarn workspaces foreach --all -ptv run test-unit",
     "g:test-e2e": "yarn workspaces foreach -At run test-e2e",
@@ -42,7 +46,6 @@
     "g:release": "yarn g:build && changeset publish",
     "clean:global-cache": "rimraf --no-glob ./dist ./coverage ./__data__ ./config/__data__ ./tsconfig.tsbuildinfo",
     "g:cz": "cz",
-    "g:publish-local": "yarn changeset version && cd scripts && ./publish-to-verdaccio.sh",
     "prepare": "yarn husky"
   },
   "config": {

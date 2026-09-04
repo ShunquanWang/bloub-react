@@ -4,6 +4,19 @@
   "description": "Bloub React studio demo",
   "private": true,
   "license": "MIT",
+  "homepage": "https://github.com/ShunquanWang/bloub-react",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShunquanWang/bloub-react.git",
+    "directory": "website"
+  },
+  "bugs": {
+    "url": "https://github.com/ShunquanWang/bloub-react/issues"
+  },
+  "author": {
+    "name": "Shunquan Wang",
+    "url": "https://github.com/ShunquanWang"
+  },
   "type": "module",
   "scripts": {
     "build": "next build",

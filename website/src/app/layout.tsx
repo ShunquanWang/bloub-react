@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const RootLayout: FC<{ children: ReactNode }> = ({ children }) => {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

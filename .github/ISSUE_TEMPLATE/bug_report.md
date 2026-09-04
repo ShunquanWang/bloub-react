@@ -2,8 +2,8 @@
 name: Bug report
 about: Something not working as it should
 title: ""
-labels: "type: bug \U0001F41B"
-assignees: michaelbromley
+labels: "bug"
+assignees: ShunquanWang
 ---
 
 **Describe the bug**
@@ -22,8 +22,9 @@ A clear and concise description of what you expected to happen.
 
 **Environment (please complete the following information):**
 
-- @hyperse/ts-node-paths version:
-- Nodejs version
+- `bloub-react` version / commit:
+- Node.js version:
+- Browser (if UI-related):
 
 **Additional context**
 Add any other context about the problem here.

@@ -1,19 +1,31 @@
 {
   "name": "bloub-react",
   "version": "0.0.1",
-  "private": true,
-  "homepage": "https://github.com/bloub/bloub-react-monorepo",
+  "description": "React component library for the animated bloub SVG avatar",
+  "keywords": [
+    "bloub",
+    "react",
+    "avatar",
+    "svg",
+    "animation",
+    "component"
+  ],
+  "homepage": "https://github.com/ShunquanWang/bloub-react",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bloub/bloub-react-monorepo",
+    "url": "git+https://github.com/ShunquanWang/bloub-react.git",
     "directory": "packages/bloub-react"
   },
+  "bugs": {
+    "url": "https://github.com/ShunquanWang/bloub-react/issues"
+  },
   "author": {
-    "name": "Hyperse",
-    "url": "https://github.com/hyperse-io"
+    "name": "Shunquan Wang",
+    "url": "https://github.com/ShunquanWang"
   },
   "type": "module",
   "license": "MIT",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -24,24 +36,22 @@
   },
   "types": "./src/index.ts",
   "files": [
-    "src/",
-    "dist/",
-    "index.js",
+    "dist",
     "README.md",
     "CHANGELOG.md",
+    "LICENSE.md",
     "package.json"
   ],
   "scripts": {
-    "build:client": "tsup --config ./tsup.config.ts",
-    "build": "rimraf dist && tsc -p ./tsconfig.build.json && yarn build:client && npm run minify",
-    "minify": "node ../../scripts/minify.mjs --dest=dist",
-    "clean": "rimraf --no-glob ./dist ./coverage ./tsconfig.tsbuildinfo",
+    "build": "rimraf dist && tsc -p ./tsconfig.build.json && tsup --config ./tsup.config.ts",
+    "clean": "rimraf --no-glob ./dist ./coverage ./tsconfig.tsbuildinfo ./dist-test-dts",
     "lint": "eslint .",
     "test": "run-s test-unit",
     "test-unit": "vitest run",
     "test-coverage": "vitest run --coverage",
     "test-unit-watch": "vitest watch --ui",
-    "typecheck": "tsc --project ./tsconfig.json --noEmit"
+    "typecheck": "tsc --project ./tsconfig.json --noEmit",
+    "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -68,6 +78,18 @@
     "node": ">=20.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
   }
 }

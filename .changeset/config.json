@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "hyperse-io/docusaurus-mono-starter"
+      "repo": "ShunquanWang/bloub-react"
     }
   ],
   "commit": false,
@@ -12,5 +12,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": ["bloub-react-website", "bloub-react-monorepo"]
 }

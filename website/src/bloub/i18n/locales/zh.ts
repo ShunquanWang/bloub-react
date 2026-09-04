@@ -112,7 +112,7 @@ const zh: typeof fr = {
     language: '语言',
     about: '关于',
     credits: '由 {name} 用 ❤️ 打造',
-    creditsAria: 'Jérémy 的 X 主页，在新标签页中打开',
+    creditsAria: 'Shunquan Wang 的 GitHub 主页，在新标签页中打开',
     github: '在 GitHub 上查看项目',
     githubAria: '项目的 GitHub 仓库，在新标签页中打开',
   },

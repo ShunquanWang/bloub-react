@@ -189,12 +189,14 @@ export function BloubApp() {
   // re-rend quand la langue change (tous les `t(...)` du studio)
   useLangue();
 
-  const initial = useMemo(
-    () => (typeof window !== 'undefined' ? readHash() : defaultHash()),
-    []
-  );
+  /**
+   * Snapshot stable pour SSR / premiere peinture client. URL, localStorage et
+   * `prefers-reduced-motion` ne sont lus qu'apres hydratation (`ready`).
+   */
+  const [initial, setInitial] = useState(defaultHash);
+  const [ready, setReady] = useState(false);
 
-  const [gallery, setGallery] = useState(initial.gallery);
+  const [gallery, setGallery] = useState(false);
 
   /* ----------------------------------------------------------------- arrivee */
 
@@ -209,11 +211,7 @@ export function BloubApp() {
    * CONTENU : la respiration, la derive du regard et les clignements sont ce que le bot EST,
    * les retirer laisserait une image morte plutot qu'un mouvement apaise.
    */
-  const [calme, setCalme] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false
-  );
+  const [calme, setCalme] = useState(false);
 
   useEffect(() => {
     const calmeQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -222,31 +220,13 @@ export function BloubApp() {
     return () => calmeQuery.removeEventListener('change', onChange);
   }, []);
 
-  // `getEntriesByType` est type sur le `PerformanceEntry` generique, qui n'a pas de
-  // `type` : c'est l'entree de navigation qui le porte, d'ou l'annotation.
-  const navigation = useMemo(() => {
-    if (typeof performance === 'undefined') return 'navigate';
-    const [nav] = performance.getEntriesByType(
-      'navigation'
-    ) as PerformanceNavigationTiming[];
-    return nav?.type ?? 'navigate';
-  }, []);
-
-  const [intro, setIntro] = useState(
-    // `#arrivee` demande explicitement a la voir : il court-circuite la regle de
-    // declenchement, c'est tout son objet — y compris apres rechargement, sinon on
-    // ne pourrait la regarder qu'une fois.
-    () =>
-      initial.arrivee ||
-      introDue({
-        named: initial.named,
-        gallery: initial.gallery,
-        rechargement: navigation !== 'navigate',
-        calme:
-          typeof window !== 'undefined'
-            ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            : false,
-      })
+  const [intro, setIntro] = useState(() =>
+    introDue({
+      named: false,
+      gallery: false,
+      rechargement: false,
+      calme: false,
+    })
   );
 
   /* ------------------------------------------------------------------ cycles */
@@ -256,38 +236,10 @@ export function BloubApp() {
    * remplit la liste, ensuite les montages de l'utilisateur font foi — y compris
    * ses modifications de celui-la.
    */
-  const [cycles, setCycles] = useState<Cycle[]>(() => {
-    const restored = parseCycles(lis('cycles'));
-    return restored.length ? restored : [defaultCycle()];
-  });
+  const [cycles, setCycles] = useState<Cycle[]>(() => [defaultCycle()]);
 
-  const [activeId, setActiveId] = useState(() => {
-    const list = (() => {
-      const restored = parseCycles(lis('cycles'));
-      return restored.length ? restored : [defaultCycle()];
-    })();
-    let id = stored('cycle', list[0]!.id, (v) => list.some((c) => c.id === v));
-    // un lien vers un etat precis ouvre le montage qui le contient
-    if (initial.named) {
-      const courant = list.find((c) => c.id === id) ?? list[0]!;
-      const found = locateIn(initial.state, courant, list, id);
-      if (found) id = found.id;
-    }
-    return id;
-  });
-  const [block, setBlock] = useState(() => {
-    if (!initial.named) return 0;
-    const list = (() => {
-      const restored = parseCycles(lis('cycles'));
-      return restored.length ? restored : [defaultCycle()];
-    })();
-    const id = stored('cycle', list[0]!.id, (v) =>
-      list.some((c) => c.id === v)
-    );
-    const courant = list.find((c) => c.id === id) ?? list[0]!;
-    const found = locateIn(initial.state, courant, list, id);
-    return found?.index ?? 0;
-  });
+  const [activeId, setActiveId] = useState(() => defaultCycle().id);
+  const [block, setBlock] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
   const cycle = cycles.find((c) => c.id === activeId) ?? cycles[0]!;
@@ -301,10 +253,7 @@ export function BloubApp() {
   // le premier bloc du montage ferait dependre la premiere image de ce que
   // l'utilisateur y a range — un eclatement ou une comete se mettraient a morpher
   // vers la boule pendant qu'elle apparait.
-  const [state, setState] = useState<StateId>(() => {
-    if (intro) return 'idle';
-    return cycle.blocks[block]?.state ?? 'idle';
-  });
+  const [state, setState] = useState<StateId>('idle');
 
   /**
    * Ecriture differee : etirer une carte remplace le cycle a chaque mouvement de
@@ -323,13 +272,15 @@ export function BloubApp() {
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
     clearTimeout(pendingRef.current);
     pendingRef.current = setTimeout(enregistreCycles, 250);
-  }, [cycles, enregistreCycles]);
+  }, [cycles, enregistreCycles, ready]);
 
   useEffect(() => {
+    if (!ready) return;
     ecris('cycle', activeId);
-  }, [activeId]);
+  }, [activeId, ready]);
 
   /*
    * Le differe se vide a la fermeture, sinon la derniere modification est perdue quand
@@ -348,9 +299,7 @@ export function BloubApp() {
 
   // La personnalisation est la vue d'accueil, sauf si l'URL designe un etat
   // precis : dans ce cas le lien vise clairement le lecteur.
-  const [view, setView] = useState<ViewId>(
-    initial.named ? 'animations' : 'personnaliser'
-  );
+  const [view, setView] = useState<ViewId>('personnaliser');
 
   /**
    * Apercu : la scene seule, sans barre laterale, sans panneau ni montage. On en
@@ -566,25 +515,85 @@ export function BloubApp() {
 
   /* ------------------------------------------------------------------- skins */
 
-  const [shape, setShape] = useState(() =>
-    stored('forme', DEFAULT_SHAPE, (v) => SHAPE_BY_ID.has(v))
-  );
-  const [color, setColor] = useState(() =>
-    stored('couleur', DEFAULT_COLOR, (v) => COLOR_BY_ID.has(v))
-  );
-  const [expression, setExpression] = useState(() =>
-    stored('expression', DEFAULT_EXPRESSION, (v) => EXPRESSION_BY_ID.has(v))
-  );
+  const [shape, setShape] = useState(DEFAULT_SHAPE);
+  const [color, setColor] = useState(DEFAULT_COLOR);
+  const [expression, setExpression] = useState(DEFAULT_EXPRESSION);
+
+  /**
+   * Apres hydratation : URL, localStorage, motion. Avant, tout reste sur les
+   * defauts SSR pour que le HTML serveur et le premier rendu client coincident.
+   */
+  useEffect(() => {
+    const hash = readHash();
+    setInitial(hash);
+    setGallery(hash.gallery);
+
+    const calmeNow = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    setCalme(calmeNow);
+
+    const [nav] = performance.getEntriesByType(
+      'navigation'
+    ) as PerformanceNavigationTiming[];
+    const navigation = nav?.type ?? 'navigate';
+
+    const nextIntro =
+      hash.arrivee ||
+      introDue({
+        named: hash.named,
+        gallery: hash.gallery,
+        rechargement: navigation !== 'navigate',
+        calme: calmeNow,
+      });
+    setIntro(nextIntro);
+
+    if (hash.named) setView('animations');
+
+    const restored = parseCycles(lis('cycles'));
+    const list = restored.length ? restored : [defaultCycle()];
+    setCycles(list);
+
+    let id = stored('cycle', list[0]!.id, (v) => list.some((c) => c.id === v));
+    let blockIndex = 0;
+    if (hash.named) {
+      const courant = list.find((c) => c.id === id) ?? list[0]!;
+      const found = locateIn(hash.state, courant, list, id);
+      if (found) {
+        id = found.id;
+        blockIndex = found.index;
+      }
+    }
+    setActiveId(id);
+    setBlock(blockIndex);
+
+    const courant = list.find((c) => c.id === id) ?? list[0]!;
+    setState(
+      nextIntro ? 'idle' : (courant.blocks[blockIndex]?.state ?? 'idle')
+    );
+    setPlaying(nextIntro || (hash.playing && hash.named));
+
+    setShape(stored('forme', DEFAULT_SHAPE, (v) => SHAPE_BY_ID.has(v)));
+    setColor(stored('couleur', DEFAULT_COLOR, (v) => COLOR_BY_ID.has(v)));
+    setExpression(
+      stored('expression', DEFAULT_EXPRESSION, (v) => EXPRESSION_BY_ID.has(v))
+    );
+
+    setReady(true);
+  }, []);
 
   useEffect(() => {
+    if (!ready) return;
     ecris('forme', shape);
-  }, [shape]);
+  }, [shape, ready]);
   useEffect(() => {
+    if (!ready) return;
     ecris('couleur', color);
-  }, [color]);
+  }, [color, ready]);
   useEffect(() => {
+    if (!ready) return;
     ecris('expression', expression);
-  }, [expression]);
+  }, [expression, ready]);
 
   /* ----------------------------------------------------------------- humeurs */
 
