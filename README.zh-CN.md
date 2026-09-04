@@ -111,6 +111,4 @@ yarn workspace bloub-react pack --dry-run
 
 ## 许可证
 
-[MIT](./LICENSE) © [Shunquan Wang](https://github.com/ShunquanWang)
-
-与 x.ai 无关联、无背书、无隶属关系。本项目仅作为练习复刻其机器人头像的视觉行为；“Grok” 与 “x.ai” 归其各自所有者所有。MIT 许可证覆盖本仓库中的代码，不覆盖其所模仿的设计。原 Vue 实现：[jeremy-prt/bloub](https://github.com/jeremy-prt/bloub)。
+[MIT](./LICENSE)

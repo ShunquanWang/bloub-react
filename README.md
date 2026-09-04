@@ -111,6 +111,4 @@ If this React port helps you, please also star the [upstream project](https://gi
 
 ## License
 
-[MIT](./LICENSE) © [Shunquan Wang](https://github.com/ShunquanWang)
-
-Not affiliated with, endorsed by, or connected to x.ai. This recreates the visual behaviour of their bot avatar as an exercise; “Grok” and “x.ai” belong to their owners. The MIT license covers the code in this repository, not the design it imitates. Original Vue implementation: [jeremy-prt/bloub](https://github.com/jeremy-prt/bloub).
+[MIT](./LICENSE)
