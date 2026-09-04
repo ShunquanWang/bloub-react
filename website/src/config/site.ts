@@ -31,7 +31,7 @@ export const SITE_KEYWORDS = [
 
 export const SITE_REPO = 'https://github.com/ShunquanWang/bloub-react';
 
-export const SITE_OG_IMAGE = '/opengraph-image.jpeg';
+export const SITE_OG_IMAGE = '/logo.png';
 
 export const SITE_AUTHOR = {
   name: 'Shunquan Wang',
