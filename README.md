@@ -8,8 +8,6 @@
 
 React component library for the animated [bloub](https://github.com/jeremy-prt/bloub) SVG avatar — one morphing body shape, independent eye shapes, no animation library.
 
-![Bloub demo](./public/bloub.mp4)
-
 ## Features
 
 - **`BloubBot`** — drop-in React avatar with live playback or frozen frames

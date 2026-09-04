@@ -137,3 +137,8 @@ target/
 # misc
 .DS_Store
 *.pem
+
+# Root demo media (too large for GitHub README / keep out of git)
+/public/*.mov
+/public/*.mp4
+/public/*.m4v
