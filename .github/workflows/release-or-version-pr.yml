@@ -14,22 +14,16 @@ permissions:
   pull-requests: write
   # npm provenance (OIDC)
   id-token: write
-  packages: write
 
 jobs:
   release:
     name: Version or publish bloub-react
     if: ${{ github.repository == 'ShunquanWang/bloub-react' }}
     runs-on: ubuntu-latest
-    # make npm token available to all steps in this job
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          # Needed for changesets changelog comparison
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -44,19 +38,11 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile
 
-      - name: Configure npm auth
-        # ensure the npm token is written to the runner's npm config so publish commands can authenticate
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          # Optional: prevent accidental token leaks in logs
-          chmod 600 ~/.npmrc
-
       - name: Create Release Pull Request or publish to npm
         id: changesets
         uses: changesets/action@v2
         with:
-          # Requires repo setting: Settings → Actions → General →
-          # "Allow GitHub Actions to create and approve pull requests"
+          # Requires: Allow GitHub Actions to create and approve pull requests
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version-script: yarn g:version
           publish-script: yarn g:release
@@ -64,6 +50,10 @@ jobs:
           commit-message: 'chore: version packages [skip ci]'
           create-github-releases: true
         env:
+          # changesets/action writes $HOME/.npmrc — point HOME at the workspace
+          # so the file lands in the repo root (see changesets/action#147).
+          HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Yarn 4 reads this via .yarnrc.yml `npmAuthToken: '${NPM_TOKEN}'`
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
