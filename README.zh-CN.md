@@ -8,7 +8,7 @@
 
 动画 SVG 头像 [bloub](https://github.com/jeremy-prt/bloub) 的 React 组件库 —— 一块形变的身体、独立的眼睛形体，不依赖动画库。
 
-![Bloub 演示](./public/bloub.mov)
+![Bloub 演示](./public/bloub.mp4)
 
 ## 特性
 

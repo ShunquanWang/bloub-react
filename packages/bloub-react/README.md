@@ -5,7 +5,7 @@
 
 React component for the animated [bloub](https://github.com/jeremy-prt/bloub) SVG avatar — one morphing body shape, independent eye shapes, no animation library.
 
-![Bloub demo](https://github.com/ShunquanWang/bloub-react/raw/main/public/bloub.mov)
+![Bloub demo](https://github.com/ShunquanWang/bloub-react/raw/main/public/bloub.mp4)
 
 React port of [jeremy-prt/bloub](https://github.com/jeremy-prt/bloub). Source monorepo: [ShunquanWang/bloub-react](https://github.com/ShunquanWang/bloub-react).
 
