@@ -50,11 +50,9 @@ jobs:
           commit-message: 'chore: version packages [skip ci]'
           create-github-releases: true
         env:
-          # changesets/action writes $HOME/.npmrc — point HOME at the workspace
-          # so the file lands in the repo root (see changesets/action#147).
-          HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # Yarn 4 does not read .npmrc; this env maps to npmAuthToken.
+          # Yarn 4 ignores .npmrc; do NOT set HOME=workspace (breaks Corepack
+          # under Node 22 — it re-downloads yarn into the repo .cache as ESM).
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
