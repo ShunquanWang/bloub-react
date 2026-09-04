@@ -43,11 +43,11 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          version: yarn g:version
-          publish: yarn g:release
-          title: '[Release] Version packages'
-          commit: 'chore: version packages [skip ci]'
-          createGithubReleases: true
+          version-script: yarn g:version
+          publish-script: yarn g:release
+          pr-title: '[Release] Version packages'
+          commit-message: 'chore: version packages [skip ci]'
+          create-github-releases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
