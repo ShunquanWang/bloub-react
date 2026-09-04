@@ -3,7 +3,7 @@
 [English](./README.md) · [中文](./README.zh-CN.md)
 
 [![npm](https://img.shields.io/npm/v/bloub-react.svg)](https://www.npmjs.com/package/bloub-react)
-[![license](https://img.shields.io/npm/l/bloub-react.svg)](./LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![CI](https://github.com/ShunquanWang/bloub-react/actions/workflows/ci-integrity.yml/badge.svg)](https://github.com/ShunquanWang/bloub-react/actions/workflows/ci-integrity.yml)
 
 动画 SVG 头像 [bloub](https://github.com/jeremy-prt/bloub) 的 React 组件库 —— 一块形变的身体、独立的眼睛形体，不依赖动画库。

@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc -p ./tsconfig.build.json && tsup --config ./tsup.config.ts",
-    "clean": "rimraf --no-glob ./dist ./coverage ./tsconfig.tsbuildinfo ./dist-test-dts",
+    "clean": "rimraf --no-glob ./dist ./coverage ./tsconfig.tsbuildinfo",
     "lint": "eslint .",
     "test": "run-s test-unit",
     "test-unit": "vitest run",
