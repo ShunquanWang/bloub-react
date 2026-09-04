@@ -1,5 +1,11 @@
 # bloub-react
 
+## 1.0.0
+
+### Major Changes
+
+- [`3a86984`](https://github.com/ShunquanWang/bloub-react/commit/3a8698474d993728b11c7e6331fda4483418d433) Thanks [@ShunquanWang](https://github.com/ShunquanWang)! - publish v1.0.0
+
 ## 0.1.0
 
 ### Minor Changes
