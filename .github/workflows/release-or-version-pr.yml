@@ -47,17 +47,9 @@ jobs:
       - name: Configure npm auth
         # ensure the npm token is written to the runner's npm config so publish commands can authenticate
         run: |
-          if [ -z "${NPM_TOKEN}" ]; then
-            echo "ERROR: NPM_TOKEN is not set. Add it to repository secrets (Settings → Secrets → Actions)." >&2
-            exit 1
-          fi
-          # Write token to both the runner's user npmrc and a project .npmrc so different tools pick it up
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          # Also configure npm (some tools read npm config directly)
-          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
           # Optional: prevent accidental token leaks in logs
-          chmod 600 ~/.npmrc .npmrc
+          chmod 600 ~/.npmrc
 
       - name: Create Release Pull Request or publish to npm
         id: changesets
